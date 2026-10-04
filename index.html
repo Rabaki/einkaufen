@@ -1,1 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Einkaufsliste (Dark Mode)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      /* Grünes Farbschema */
+      --accent-green: #10b981;
+      --accent-green-hover: #059669;
+      --accent-green-subtle: rgba(16, 185, 129, 0.12);
 
+      /* Warn- & Löschfarben */
+      --danger: #f87171;
+      --danger-hover-bg: rgba(239, 68, 68, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 48px 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      padding: 24px;
+      height: fit-content;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .header .icon {
+      font-size: 1.6rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background-color: #0f172a;
+      color: var(--text-main);
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--text-muted);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 3px var(--accent-green-subtle);
+    }
+
+    button.btn-add {
+      background-color: var(--accent-green);
+      color: #022c22;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button.btn-add:hover {
+      background-color: var(--accent-green-hover);
+    }
+
+    button.btn-add:active {
+      transform: scale(0.98);
+    }
+
+    ul.item-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    li.item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background-color: #162032;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    li.item:hover {
+      background-color: #1e2e42;
+      border-color: #475569;
+    }
+
+    .item-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .item-content input[type="checkbox"] {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #64748b;
+      border-radius: 6px;
+      background-color: transparent;
+      cursor: pointer;
+      display: grid;
+      place-content: center;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .item-content input[type="checkbox"]:checked {
+      border-color: var(--accent-green);
+      background-color: var(--accent-green);
+    }
+
+    .item-content input[type="checkbox"]:checked::before {
+      content: "✔";
+      color: #022c22;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .item-text {
+      font-size: 0.95rem;
+      word-break: break-word;
+      transition: color 0.2s;
+    }
+
+    li.completed .item-text {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+
+    button.btn-delete {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 1rem;
+      line-height: 1;
+      transition: color 0.2s, background-color 0.2s;
+    }
+
+    button.btn-delete:hover {
+      color: var(--danger);
+      background-color: var(--danger-hover-bg);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 20px 0;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header class="header">
+      <span class="icon">🛒</span>
+      <h1>Einkaufsliste</h1>
+    </header>
+
+    <div class="input-group">
+      <input 
+        type="text" 
+        id="itemInput" 
+        placeholder="Artikel hinzufügen (z. B. Hafermilch)..." 
+        autofocus
+      >
+      <button class="btn-add" id="addButton">Hinzufügen</button>
+    </div>
+
+    <ul class="item-list" id="itemList"></ul>
+    <div class="empty-state" id="emptyState">Deine Liste ist leer.</div>
+  </div>
+
+  <script>
+    const itemInput = document.getElementById('itemInput');
+    const addButton = document.getElementById('addButton');
+    const itemList = document.getElementById('itemList');
+    const emptyState = document.getElementById('emptyState');
+
+    let items = JSON.parse(localStorage.getItem('shopping_items_dark')) || [];
+
+    function saveItems() {
+      localStorage.setItem('shopping_items_dark', JSON.stringify(items));
+    }
+
+    function renderList() {
+      itemList.innerHTML = '';
+
+      if (items.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      items.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = `item ${item.completed ? 'completed' : ''}`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'item-content';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.completed;
+        checkbox.addEventListener('change', () => toggleItem(index));
+
+        const span = document.createElement('span');
+        span.className = 'item-text';
+        span.textContent = item.text;
+
+        contentDiv.appendChild(checkbox);
+        contentDiv.appendChild(span);
+        contentDiv.addEventListener('click', (e) => {
+          if (e.target !== checkbox) {
+            toggleItem(index);
+          }
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete';
+        deleteBtn.innerHTML = '✕';
+        deleteBtn.title = 'Eintrag entfernen';
+        deleteBtn.addEventListener('click', () => deleteItem(index));
+
+        li.appendChild(contentDiv);
+        li.appendChild(deleteBtn);
+        itemList.appendChild(li);
+      });
+    }
+
+    function addItem() {
+      const text = itemInput.value.trim();
+      if (!text) return;
+
+      items.push({ text: text, completed: false });
+      saveItems();
+      renderList();
+
+      itemInput.value = '';
+      itemInput.focus();
+    }
+
+    function toggleItem(index) {
+      items[index].completed = !items[index].completed;
+      saveItems();
+      renderList();
+    }
+
+    function deleteItem(index) {
+      items.splice(index, 1);
+      saveItems();
+      renderList();
+    }
+
+    addButton.addEventListener('click', addItem);
+    itemInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addItem();
+    });
+
+    renderList();
+  </script>
+</body>
+</html>
